@@ -308,3 +308,197 @@
 
 
 ### 多表级联查询
+
+实体类体现一对多的关系，可以使用 `List` 对象体现
+
+```xml
+<!-- resultMap 可以说明一对多或多对一的映射关系 -->
+<resultMap id="rmGoods" type="Goods">
+    <!-- 映射主键 -->
+	<id property="" cloumn=""></id>
+    <!-- 
+		collection 得到查询结果之后，对所有 Goods 对象遍历提取 good_id 并带入 goods 命名空间中的 selectByGoodsId SQL 中进行查询赋值给 goodsList
+ 	-->
+    <collection property="goodsList" select="goods.selectByGoodsId" column="goods_id"></collection>
+</resultMap>
+<select id="oneToMany" resultMap="rmGoods" >
+	select *
+</select>
+```
+
+
+
+##### 多对一
+
+多的对象中持有一的实体
+
+```xml
+<resultMap id="rmGoods" type="Goods">
+	<id></id>
+    <!-- cloumn 使用到了 id 会导致 id 无法正确赋值（默认策略） -->
+    <result cloumn="id" property="id">
+    <association property="good" select="goods.selectById" cloumn="id"></association>
+</resultMap>
+<select id="selectManyToOne" resultMap="rmGoods">
+	select *
+</select>
+```
+
+
+
+### 分页插件 `PageHelper`
+
+- 引入 `PageHelper` 和 `jsqlparser`
+- `mybatis-config.xml` 添加插件配置
+- 代码中使用 `PageHelper.startPage()` 自动分页
+
+
+
+### `MyBatis` 配置 `C3P0` 连接池
+
+创建额外类 `datasource.C3P0DataSourceFactory`
+
+
+
+```java
+public class C3P0DataSourceFactory extends UnpooledDataSourceFactory {
+    public C3P0DataSourceFactory(){
+        this.dataSource = new ComboPooledDataSource();
+    }
+}
+```
+
+```xml
+<dataSource type="com.company.mybatis.datasource.C3P0DataSourceFactory">
+                <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+                <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/imooc?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false"/>
+                <property name="user" value="root"/>
+                <property name="password" value="123456"/>
+                <property name="initialPoolSize" value="5"/>
+                <property name="maxPoolSize" value="20"/>
+                <property name="minPoolSize" value="5"/>
+            </dataSource>
+```
+
+
+
+### 批处理
+
+##### 批量插入
+
+使用 `<foreach>` 标签对 `collection` 传入的集合进行处理
+
+```xml
+<insert id="batch" parameterType="List">\
+	insert ... 
+    <!-- collection 确定数据源，名字无法随意修改 separator 添加分隔符号-->
+    <foreach collection="list" item="item" index="index" separator=",">
+    	(#{item.value})
+    </foreach>
+</insert>
+```
+
+> 批量插入数据的局限性：
+>
+> 无法获取插入数据的 id
+>
+> 可能生成的 `SQL` 语句过长，服务器拒绝
+
+
+
+##### 批量删除
+
+```xml
+<delete id="batch" parameterType="List">
+	delete ... where id in
+    <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+    	#{item}
+    </foreach>
+</delete>
+```
+
+
+
+### 注解
+
+![image-20220223135904159](imgs/image-20220223135904159.png)
+
+
+
+##### 使用步骤
+
+- 创建接口
+
+  ```java
+  public interface EmployeeDAO {
+      @Select("select * from employee where salary between #{min} and #{max} order by eno")
+      public List<Employee> selectBySalaryRange(@Param("min") Integer min, @Param("max") Integer max);
+  }
+  ```
+
+  
+
+- 配置 `mapper`
+
+  ```xml
+  <mappers>
+  	1.<mapper class="EmployeeDAO"/>
+      2.<package name="dao"/>
+  </mappers>
+  ```
+
+- 书写功能代码
+
+
+
+```java
+@SelectKey(statement="select last_insert_id()", before = false, keyProperty="id", resultType="Integer.class") // 获取最新插入主键的编号
+
+@Results({
+    @Result(cloumn="", property="", id=true) // 设置主键
+})
+```
+
+
+
+# 数据库分页的实现原理
+
+### `Mysql`
+
+```sql
+select ... limit 1,10;
+```
+
+
+
+### `Oracle`
+
+```sql
+select t3.* from (
+    select t2.*,[rownum] as row from (
+    	select t.* from table order by id desc  
+    )t2 where rownum <= 20 # 提取行号前20
+)t3 where row > 11 # 11 ~ 20
+```
+
+
+
+### `SQL Server 2000`
+
+```sql
+select top 3 * from table
+where 
+	id not in 
+	(select top 15 id from table)
+```
+
+
+
+### `SQL Server 2012+`
+
+```sql
+select * from table order by id offset 4 rows fetch next 5 rows only
+```
+
+
+
