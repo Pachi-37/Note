@@ -159,6 +159,15 @@
 | #IMPLIED     | 属性不是必需的 |
 | #FIXED value | 属性值是固定的 |
 
+实体
+
+实体是定义引用普通文本或特殊字符的快捷方式的变量
+
+```dtd
+<!ENTITY entity-name "entity-value">
+<!-- 实体的引用方式 &entity-name; 	-->
+```
+
 
 
 ### `XML Schema`
@@ -168,3 +177,104 @@
 - 数据类型
 - 格式限定
 - 数据范围
+
+
+
+##### 优点
+
+保护数据通信
+
+- 双方对于内容有相同的 期望值
+
+可扩展性
+
+- `Schema` 之间可以相互引用
+- 可以创建基于标准数据类型衍生的数据类型
+- 一个文档可以引用多个 `Schema`
+
+
+
+##### `<schema>` 元素
+
+> `<schema>` 元素是每一个 `XML Schema` 的根元素
+
+
+
+##### `XSD` 元素
+
+简易元素
+
+仅包含文本元素，不包含其他其他元素或者属性
+
+```xml
+<element name="" type="">
+```
+
+
+
+##### 属性
+
+简单元素无法拥有属性。一个元素拥有属性会被当作复合类型；属性本身可以作为简易类型声明
+
+```xml
+<xs:attribute name="" value="">
+```
+
+
+
+##### 限定
+
+用于为 `XML` 元素或者属性定义可接受的值被称为 `facet`
+
+```xml
+<!-- 对元素范围限定 -->
+<element name="">
+	<simpleType>
+    	<restriction base="integer">
+        	<maxInclusive value=""/>
+            <minInclusive value=""/>
+        </restriction>
+    </simpleType>
+</element>
+
+<!-- 使用枚举类型 -->
+<element name="">
+	<simpleType>
+    	<restriction base="integer">
+        	<enumeration value=""/>
+        </restriction>
+    </simpleType>
+</element>
+```
+
+
+
+| 限定             | 描述                                                 |
+| :--------------- | :--------------------------------------------------- |
+| `enumeration`    | 定义枚举                                             |
+| `fractionDigits` | 定义最大正小数                                       |
+| `length`         | 定义允许的长度                                       |
+| `maxExclusive`   | 定义数值的上限 （不包含）                            |
+| `maxInclusive`   | 定义数值的上限 （包含）                              |
+| `maxLength`      | 定义最大长度                                         |
+| `minExclusive`   | 定义数值的下限（不包含）                             |
+| `minInclusive`   | 定义数值的下限（包含）                               |
+| `minLength`      | 定义允许的最小长度                                   |
+| `pattern`        | 定义可接受的字符的精确序列                           |
+| `totalDigits`    | 定义所允许的阿拉伯数字的精确位数，必须大于0          |
+| `whiteSpace`     | 定义空白字符（换行、回车、空格以及制表符）的处理方式 |
+
+
+
+##### 复合元素类型
+
+- 空元素
+- 包含其他元素
+- 仅包含文本
+- 包含元素和文本
+
+
+
+### `DOM` 文档对象模型
+
+`Document Object Model` 定义访问和操作 `XML` 文档的标准方法
