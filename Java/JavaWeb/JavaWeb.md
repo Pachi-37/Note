@@ -194,6 +194,20 @@
 
 
 
+每一个 `xml` 引用 `schema` 文件。需要书写在根标签上
+
+- `xmlns=""`	
+  - 引用的 `schema` 约束文件
+- `targetNamespace`
+  - 命名空间，`schema` 特有的属性
+  - 定义 `schema` 被 `xml` 引用时的名称
+- `xmlns:xsi`
+  - 声明当前的 `xml` 文件是 `schema` 的一个实例，是被 `schema` 约束的
+- `xsi:schemaLocation`
+  - 引用 `schema` 的位置
+
+
+
 ##### `<schema>` 元素
 
 > `<schema>` 元素是每一个 `XML Schema` 的根元素
@@ -275,6 +289,145 @@
 
 
 
+
+
 ### `DOM` 文档对象模型
 
 `Document Object Model` 定义访问和操作 `XML` 文档的标准方法
+
+
+
+### `Dom4j`
+
+简单易用的解析 `XML` 的开源库
+
+- 将 `XML` 视为 `Document` 对象
+- `XML` 标签被定义为 `Element` 对象 
+
+
+
+### `Xpath`
+
+`Xpath` 是一门在 `XML` 文档中查找信息的语言（对元素和属性遍历）
+
+
+
+##### 结点
+
+- 元素
+- 属性
+- 命名空间
+- 处理指令
+- 注释
+- 文档（根）结点
+
+
+
+##### 基本值
+
+无父结点和子结点
+
+
+
+##### 项目
+
+基本值或者节点
+
+
+
+##### 基本表达式
+
+| 表达式     | 描述                                                       |
+| :--------- | :--------------------------------------------------------- |
+| `nodename` | 选取此节点的所有子节点。                                   |
+| /          | 从根节点选取。                                             |
+| //         | 从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置。 |
+| .          | 选取当前节点。                                             |
+| ..         | 选取当前节点的父节点。                                     |
+| @          | 选取属性。                                                 |
+
+
+
+##### 谓语表达式
+
+基本表达式再添加约束条件
+
+| 路径表达式                         | 结果                                                         |
+| :--------------------------------- | :----------------------------------------------------------- |
+| /bookstore/book[1]                 | 选取属于 bookstore 子元素的第一个 book 元素。                |
+| /bookstore/book[last()]            | 选取属于 bookstore 子元素的最后一个 book 元素。              |
+| /bookstore/book[last()-1]          | 选取属于 bookstore 子元素的倒数第二个 book 元素。            |
+| /bookstore/book[position()<3]      | 选取最前面的两个属于 bookstore 元素的子元素的 book 元素。    |
+| //title[@lang]                     | 选取所有拥有名为 lang 的属性的 title 元素。                  |
+| //title[@lang='eng']               | 选取所有 title 元素，且这些元素拥有值为 eng 的 lang 属性。   |
+| /bookstore/book[price>35.00]       | 选取 bookstore 元素的所有 book 元素，且其中的 price 元素的值须大于 35.00。 |
+| /bookstore/book[price>35.00]/title | 选取 bookstore 元素中的 book 元素的所有 title 元素，且其中的 price 元素的值须大于 35.00。 |
+
+
+
+### `Jaxen`
+
+开源的 `Xpath` 库 
+
+
+
+### `JASON`
+
+数据由键值描述，由逗号分隔
+
+大括号代表一个完整的对象，拥有多个键值对
+
+中括号用于保存数组，多个对象之间使用逗号分隔 
+
+
+
+### `FastJASON`
+
+阿里巴巴的著名 `json` 序列化和反序列化工具包
+
+
+
+### `jQuery` `Ajax`
+
+
+
+##### `jQuery`  选择器
+
+选择元素并进行处理
+
+
+
+```html
+jQuery(选择器表达式)
+$(选择器表达式)
+```
+
+
+
+
+
+##### `Ajax`
+
+可以在不刷新的情况下，实现页面的局部更新
+
+
+
+##### 使用
+
+- 创建 `XmlHttpRequest`
+  - 因为 `XmlHttpReque` 不是 `w3c` 标准，不同的浏览器创建方法不一样
+- 发送 `Ajax` 请求
+- 处理服务器响应
+
+
+
+```javascript
+// 创建 XMLHttpRequest 对象
+var xmlhttp;
+if (window.XMLHttpRequest) {
+    xmlhttp = new XMLHttpRequest();
+} else {
+    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+}
+```
+
