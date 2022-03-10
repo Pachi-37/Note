@@ -2,6 +2,107 @@
 
 
 
+### 服务器加密连接
+
+`Tomcat` 服务器启动时会启动多个 `Connector` ，而 `Tomcat` 服务器分为加密连接器和非加密连接器
+
+
+
+##### 常见的加密方式
+
+- 对称加密
+
+  - 采用单密钥加密
+
+- 非对称加密
+
+  - 双方都持有对方的公钥
+
+  > 通过 `CA` 机构确保公钥的可靠性
+
+
+
+##### `https` 连接器
+
+浏览器想要发送加密数据给服务器，服务器首先要出示一份 **数字证书** ，将生成的 `.keystore` 密钥库文件拷贝到 `Tomcat` 的 `conf` 文件下
+
+```shell
+# 生成 Tomcat 证书
+keytool -genkey -alias tomcat -keyalg RSA
+```
+
+
+
+### `HTTP` 协议
+
+它是 `TCP/IP` 协议的一个应用层协议，用于定义浏览器和服务器之间的数据交互过程
+
+> `Http/1.0` 和 `Http/1.1` 区别
+>
+> `1.0` 客户端和 `web` 服务器建立连接，只能获取一个 `web` 资源
+>
+> `1.1` 在建立连接之后可以获取多个 `web` 资源
+
+
+
+##### `Http` 请求
+
+一个完整的 `HTTP` 请求包含：一个请求行，若干个消息头以及实体内容
+
+- 请求行
+
+  - 描述客户端的请求方式
+
+  > 默认情况下为 `get`
+  >
+  > 使用 `Get` 方式 `URL` 地址后面的参数有限制，通常不能超过 `1k`
+
+  - 请求的资源名称
+  - 使用 `Http` 版本号
+
+- 多个消息头
+
+  - 客户端请求信息
+
+- 一个空白行 
+
+
+
+##### 消息头
+
+- `accept`
+  - 浏览器通过这个头告诉服务器，它所支持的数据类型　
+- `Accept-Charset`
+  -  浏览器通过这个头告诉服务器，它支持哪种字符集
+- `Accept-Encoding`
+  - 浏览器通过这个头告诉服务器，支持的压缩格式
+- `Accept-Language`
+  - 浏览器通过这个头告诉服务器，它的语言环境
+- `Host`
+  - 浏览器通过这个头告诉服务器，想访问哪台主机
+- `If-Modified-Since`
+  -  浏览器通过这个头告诉服务器，缓存数据的时间
+- `Referer`
+  - 浏览器通过这个头告诉服务器，客户机是哪个页面来的 防盗链
+- `Connection`
+  - 浏览器通过这个头告诉服务器，请求完后是断开链接还是何持链接
+
+
+
+##### `Http` 响应
+
+一个 `Http` 响应代表服务器向客户端发送回的数据，包括：一个状态行，若干消息头以及实体内容
+
+- 状态行
+  - 描述服务器对请求的处理结果
+- 多个消息头
+  - 描述服务器的基本信息
+  - 数据的描述，可以通知客户端如何处理一会要返回的数据
+- 实体内容
+  - 服务器向客户端送回的数据
+
+
+
 ### `XML`
 
 全称可扩展标记语言
@@ -429,5 +530,151 @@ if (window.XMLHttpRequest) {
 } else {
     xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
 }
+
+// 创建请求
+xmlhttp.opean()
+
+// 发送请求
+xmlhttp.send()
+
+// 监听 AJAX 执行过程
+xmlhttp.onreadystatechange()
+
+// 说明 xmlHttpRequest 状态
+xmlhttp.readyState
+
+// 服务器响应状态码
 ```
 
+ 
+
+##### 异步和同步
+
+一旦使用同步的功能会导致 `onreadystatechange` 设置的方法失效
+
+同步执行代码进入等待状态，数据不返回，程序不会向下执行
+
+
+
+### `Jquery` 对 `ajax` 的支持
+
+`jQuery` 对 `AJAx` 进行了封装，提供了 `$ajax()` 方法
+
+| 名称                         | 值/描述                                                      |
+| :--------------------------- | :----------------------------------------------------------- |
+| `data`                       | 规定要发送到服务器的数据。                                   |
+| `dataType`                   | 预期的服务器响应的数据类型。(`text|json|xml|html|jsonp|script`) |
+| `error(xhr,status,error)`    | 如果请求失败要运行的函数。                                   |
+| `success(result,status,xhr)` | 当请求成功时运行的函数。                                     |
+| `type`                       | 规定请求的类型（GET 或 POST）。                              |
+| `url`                        | 规定发送请求的 URL。默认是当前页面。                         |
+
+> `jsonp` 主要用于解决跨域访问问题
+
+
+
+### 二级联动菜单实现
+
+```html
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            "url": "/ChannelServlet",
+            "data": {"level": "1"},
+            "type": "get",
+            "dataType": "json",
+            "success": function (json) {
+                console.log(json);
+                for (let i = 0; i < json.length; i++) {
+                    $("#lv1").append("<option value=" + json[i].code + ">" + json[i].name + "</option>");
+                }
+            }
+        })
+    })
+
+    $(function () {
+        $("#lv1").on("change", function () {
+            var parent = $(this).val();
+            $.ajax({
+                "url": "/ChannelServlet",
+                "data": {"level": "2", "parent": parent},
+                "type": "get",
+                "dataType": "json",
+                "success": function (json) {
+                    console.log(json);
+                    $("#lv2>option").remove();
+                    for (let i = 0; i < json.length; i++) {
+                        var data = json[i];
+                        $("#lv2").append("<option value = " + data.code + ">" + data.name + "</option>")
+                    }
+                }
+            })
+        })
+    })
+</script>
+<body>
+<select id="lv1" style="width: 200px;height: 30px">
+    <option selected="selected">请选择</option>
+</select>
+<select id="lv2" style="width: 200px;height: 30px"></select>
+```
+
+
+
+
+
+### 正则表达式
+
+
+
+##### 字符范围匹配
+
+![image-20220307154208189](imgs/image-20220307154208189.png)
+
+
+
+##### 元字符匹配
+
+元字符，特定的表达某一类的字符
+
+![image-20220307154805547](imgs/image-20220307154805547.png)
+
+
+
+##### 多次重复匹配
+
+![image-20220307155335438](imgs/image-20220307155335438.png)
+
+##### 定位匹配
+
+![image-20220310101001968](imgs/image-20220310101001968.png)
+
+
+
+##### 贪婪模式和非贪婪模式
+
+非贪婪模式
+
+在满足条件的情况下尽可能少的匹配到字符串
+
+在描述数量的后面使用 `?`
+
+
+
+> 在 `JS` 中定义正则表达式对象只需要 `//` 中书写正则表达式
+
+
+
+### 过滤器
+
+`Servlet` 下的组件，主要用来对 `URL` 进行统一的拦截处理
+
+过滤器通常用于应用程序进行全局处理
+
+
+
+##### 开发过滤器的步骤
+
+- 实现 `javax.servlet.Filter` 接口
+- 在 `Filter` 接口实现 `doFilter()` 方法中编写过滤器功能代码
+- 在 `web.xml` 中配置过滤器，说明拦截 `URL` 的范围 
