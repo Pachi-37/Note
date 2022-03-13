@@ -103,6 +103,57 @@ keytool -genkey -alias tomcat -keyalg RSA
 
 
 
+##### 状态行
+
+- `HTTP` 版本号
+- 状态码
+- 原因叙述 `<CRLF>`
+
+> 状态码：用于表示服务器对请求处理的结果，它是一个三位的十进制数
+>
+> `1XX`	表示成功接收请求，要求客户端继续提交下一次才能完成整个处理
+>
+> `2XX`	表示成功接收请求并已经完成整个处理过程，常使用 `200`
+>
+> `3xx`	为完成请求，客户端需要进一步细化请求
+>
+> `4xx`	客户端请求错误，常用 `404`
+>
+> `5xx`	服务器端出错，常用 `500`
+
+
+
+##### 常用的响应头
+
+- `Location`
+  -  服务器通过这个头，来告诉浏览器跳到哪里
+- `Server`
+  - 服务器通过这个头，告诉浏览器服务器的型号
+- `Content-Encoding`
+  - 服务器通过这个头，告诉浏览器，数据的压缩格式
+- `Content-Length`
+  -  服务器通过这个头，告诉浏览器回送数据的长度
+- `Content-Language`
+  -  服务器通过这个头，告诉浏览器语言环境
+- `Content-Type`
+  - 服务器通过这个头，告诉浏览器回送数据的类型
+- `Refresh`
+  - 服务器通过这个头，告诉浏览器定时刷新
+- `Content-Disposition`
+  -  服务器通过这个头，告诉浏览器以下载方式打数据
+- `Transfer-Encoding`
+  - 服务器通过这个头，告诉浏览器数据是以分块方式回送的
+- `Expires`
+  -  -1 控制浏览器不要缓存
+- `Cache-Control`
+  - no-cache  
+- `Pragma`
+  -  no-cache
+
+
+
+
+
 ### `XML`
 
 全称可扩展标记语言
@@ -662,6 +713,67 @@ xmlhttp.readyState
 
 
 > 在 `JS` 中定义正则表达式对象只需要 `//` 中书写正则表达式
+
+
+
+### `Servlet`
+
+一门开发动态 `web` 资源的技术
+
+
+
+##### 开发步骤
+
+- 编写 `java` 类，实现 `servlet` 接口
+- 部署到服务器
+
+
+
+##### 运行过程
+
+- 服务器检查是否创建并加载 `Servlet` 实例对象，如果是直接执行第四步
+- 创建并装载 `Servlet` 实例对象
+- 调用 `Servlet` 实例对象的 `init()` 方法
+- 创建 `HttpServletRequest` 对象和 `HttpServletResponse` 对象，然后调用 `Servlet` 中的 `service()` 方法，将请求和响应对象作为参数传入
+- `WEB` 服务器停止或者重新启动之前，`Servlet` 引擎将会卸载 `Servlet`，并且在卸载之前调用 `Servlet` 中的 `destory()` 方法
+
+
+
+##### 接口实现类
+
+两个默认的接口实现类：`GenericServlet` `HttpServlet`
+
+`HttpServlet` 只能够处理 `HTTP` 请求的 `Servlet`
+
+> 在原有接口上添加了一些与 `Http` 协议处理方法
+
+
+
+##### `Servlet` 类和普通 `java` 类
+
+`Servlet` 是一个供 `Servlet` 引擎调用的类，它不能独立运行
+
+通常情况下服务器只会创建一个 `Servlet` 实例对象，及一旦创建它会驻留在内存，直至 `WEB` 容器退出
+
+在整个生命周期中 `init()` 只会被调用一次。而对 `Servlet` 每一次访问请求对会导致 `Servlet` 调用一次 `service()` 方法，同时创建新的 `HttpServletRequest` 和 `HttpServletResponse` 对象
+
+
+
+##### 缺省 `Servlet`
+
+如果某个 `Servlet` 映射为 `/` ，那么这个 `Servlet` 就成为 `WEB` 应用程序的缺省 `Servlet`
+
+凡是在 `web.xml` 文件中找不到匹配的 `URL`，访问请求都会交给 缺省 `Servlet`
+
+
+
+##### 线程安全
+
+当多个 `Servlet` 同时访问一个 `Servlet`，`web` 服务器会为每一个客户端访问请求创建一个线程，调用 `service()` 方法，如果 `service` 访问同一个资源，会发生线程安全的问题
+
+> 可以使用线程锁来解决问题，但是通常不使用这种方法
+>
+> 针对线程安全问题使用 `SingleThreadModel` 接口，这个接口不能真正的解决多线程安全问题，它只是创建了多个对象实现多个单线程
 
 
 
