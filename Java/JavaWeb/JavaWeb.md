@@ -777,6 +777,167 @@ xmlhttp.readyState
 
 
 
+### `ServletConfig`
+
+##### 配置 `Servlet` 初始化参数
+
+```xml
+<!-- 使用该标签配置 servlet 初始化参数 -->
+<init-param>
+	<param-name></param-name>
+    <param-value></param-value>
+</init-param>
+```
+
+
+
+##### 通过 `ServletConfig` 获取 `Servlet` 初始化参数
+
+当 `servlet` 配置了初始化参数之后，`web` 容器在创建实例对象时，会自动将这些初始化参数封装到 `ServletConfig` 对象中，在调用 `init` 方法时，将它传递给 `servlet`
+
+
+
+### `ServletContent` 对象
+
+`WEB` 容器在启动时，它会为每一个 `WEB` 应用程序创建一个对应的 `ServletContent` 对象，它代表当前 `web` 应用
+
+`ServletConfig` 对象维护 `ServletContent` 对象的引用，我们使用 `ServletConfig.getServletContent` 来获取 `ServletContent` 对象
+
+一个 `WEB` 应用所有的 `servlet` 共享同一个 `servletContent` 对象，因此 `servlet` 对象可以通过 `ServletContent` 对象实现通讯
+
+
+
+##### 多个 `servlet` 实现数据共享
+
+- 通过 `ServletConfig` 获取 `ServletContent` 对象的引用
+- 将数据存储到对象中
+
+
+
+##### `WEB` 应用初始化参数
+
+```xml
+<!-- 配置WEB应用初始化参数 -->
+<content-param>
+	<param-name></param-name>
+    <param-value></param-value>
+</content-param>
+```
+
+```java
+ServletContext context = this.getServletContext();
+//获取整个web站点的初始化参数
+String contextInitParam = context.getInitParameter("url");
+response.getWriter().print(contextInitParam);
+```
+
+
+
+##### 实现请求转发
+
+```java
+ServletContext context = this.getServletContext();//获取ServletContext对象
+RequestDispatcher rd = context.getRequestDispatcher("URL");//获取请求转发对象(RequestDispatcher)
+rd.forward(request, response);//调用forward方法实现请求转发
+```
+
+
+
+##### 读取资源文件
+
+```java
+// 防止乱码
+response.setContentType("text/html;charset=UTF-8");
+```
+
+
+
+##### 在客户端缓存 `Servlet` 的输出
+
+对于不常变化的数据，可以为 `Servlet` 设置合理的缓存时间，避免浏览器频繁的向服务器发送请求
+
+```java
+response.setDateHeader("expires",System.currentTimeMillis() + 24 * 3600 * 1000);
+```
+
+
+
+### `HttpServletResponse` 对象
+
+代表服务器的响应。这个对象封装了向客户端发送数据，响应头，状态码
+
+
+
+##### 使用 `OutputStream` 流向客户端输出中文
+
+服务器端数据是以那个码输出的，控制客户端浏览器以相应的码打开
+
+
+
+```java
+String data = "";
+OutputStream outputstream = response.getOutputStream();
+response.getHeader("content-type", "text/html;charset=UTF-8");
+byte[] dataByteArr = data.getBytes("UTF-8"); //以指定编码进行转换
+outputStream.write(dataByteArr);
+```
+
+
+
+##### 使用 `PrintWriter` 流向客户端输出中文
+
+```java
+response.setCharasetEncoding("UTF-8");
+PrintWriter out = response.getWriter();
+```
+
+> 一般输出字符数据使用 `PrintWriter` 比较方便，省去将字符转换成字符数组
+
+
+
+##### 文件下载
+
+- 获取待下载文件的绝对路径‘
+- 获取下载文件名
+- 设置 `content-disposition` 相应头控制浏览器以下载形式打开文件
+- 获取待下载文件的输入流
+- 创建数据缓冲区
+- 通过 `response` 对象获取 `OutputStream` 流
+- 将 `FileInputStream` 流写入到 `buffer` 缓冲区
+- 使用 `OutputStream` 将缓冲区数据输出到客户端浏览器
+
+
+
+```java
+//1.获取要下载的文件的绝对路径
+String realPath = this.getServletContext().getRealPath("/download/1.JPG");
+//2.获取要下载的文件名
+String fileName = realPath.substring(realPath.lastIndexOf("\\")+1);
+//3.设置content-disposition响应头控制浏览器以下载的形式打开文件
+response.setHeader("content-disposition", "attachment;filename="+fileName);
+//4.获取要下载的文件输入流
+InputStream in = new FileInputStream(realPath);
+int len = 0;
+//5.创建数据缓冲区
+byte[] buffer = new byte[1024];
+//6.通过response对象获取OutputStream流
+OutputStream out = response.getOutputStream();
+//7.将FileInputStream流写入到buffer缓冲区
+while ((len = in.read(buffer)) > 0) 
+	//8.使用OutputStream将缓冲区的数据输出到客户端浏览器
+	out.write(buffer,0,len);
+```
+
+> 中文文件下载需要注意：
+>
+> 中文文件名要使用 `URLEncoder.encode` 方法进行编码，否则出现中文名乱码
+>
+> 文件下载推荐使用 `OutputStream`
+>
+> `OutputStream` 使用的是字节流，可以处理任意类型的文件，`PrintWriter` 是字符流，只能处理字符，处理其他文件时候可能导致数据丢失
+
+
+
 ### 过滤器
 
 `Servlet` 下的组件，主要用来对 `URL` 进行统一的拦截处理
@@ -790,3 +951,19 @@ xmlhttp.readyState
 - 实现 `javax.servlet.Filter` 接口
 - 在 `Filter` 接口实现 `doFilter()` 方法中编写过滤器功能代码
 - 在 `web.xml` 中配置过滤器，说明拦截 `URL` 的范围 
+
+
+
+```xml
+<!-- filter 标签用来说明哪个类是过滤器，并在启动时自动加载 -->
+<filter>
+    <filter-name></filter-name>
+    <filter-class></filter-class>
+</filter>
+<!-- 映射 fiter 范围 -->
+<filter-mapping>
+    <filter-name></filter-name>
+    <url-pattern></url-pattern>
+</filter-mapping>
+```
+
