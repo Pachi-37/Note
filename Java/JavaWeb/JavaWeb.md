@@ -938,6 +938,80 @@ while ((len = in.read(buffer)) > 0)
 
 
 
+### `HttpServletResponse` 常见应用
+
+##### 
+
+##### 生成验证码
+
+生成图片使用 `BufferedImage` 类
+
+
+
+```java
+// 在内存中创建一张图片
+BufferedImage image = new BufferedImage(,,);
+
+// 获取图片
+Graphics2D g = (Graphics2D)image.getGraphics();
+g.setColor(Color.WHITE);//设置图片的背景色
+g.fillRect(0, 0, 80, 20);//填充背景色
+
+// 向图片上写入数据
+g.setColor(Color.BLUE);//设置图片上字体的颜色
+g.setFont(new Font(null, Font.BOLD, 20));
+g.drawString(makeNum(), 0, 20); // 生成随机数
+
+//4.设置响应头控制浏览器浏览器以图片的方式打开
+response.setContentType("image/jpeg");//等同于response.setHeader("Content-Type", "image/jpeg");
+
+//5.设置响应头控制浏览器不缓存图片数据
+response.setDateHeader("expries", -1);
+response.setHeader("Cache-Control", "no-cache");
+response.setHeader("Pragma", "no-cache");
+
+//6.将图片写给浏览器
+ImageIO.write(image, "jpg", response.getOutputStream());
+```
+
+
+
+
+
+##### `URL` 地址推荐写法
+
+书写 `URL` 建议使用 `/` 开头，也就使用绝对路径的方式
+
+> `/` 在服务器中代表当前的 `web` 工程
+>
+> `/` 在浏览器中代表 `webapps` 目录
+
+
+
+- `/` 代表 `web` 工程的情况
+
+  - `ServletContent.getRealPath(String path)`
+  - `forward`
+  - 使用 `<jsp:include page="/">`
+
+- `/` 代表 `webapps` 目录常见的情景
+
+  - `sendRedirect()`
+
+  > 推荐使用 `request.getContextPath()` 代替 `/项目名称`
+
+- 使用超链接进行跳转
+
+- `Form` 表单提交
+
+- `js` 脚本和 `css` 文件的引用
+
+
+
+##### `response`  
+
+
+
 ### 过滤器
 
 `Servlet` 下的组件，主要用来对 `URL` 进行统一的拦截处理
