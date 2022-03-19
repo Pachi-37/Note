@@ -1008,7 +1008,57 @@ ImageIO.write(image, "jpg", response.getOutputStream());
 
 
 
-##### `response`  
+### `HttpServletRequest`
+
+代表客户端的请求，当客户端通过 `Http` 协议访问服务器，请求信息都封装在这个对象中
+
+
+
+##### `request` 方法
+
+- `getRequestURL`
+  - 返回客户端发出请求时的完整URL
+- `getRequestURI`
+  - 方法返回请求行中的资源名部分
+- `getQueryString `
+  - 方法返回请求行中的参数部分
+- `getPathInfo`
+  - 方法返回请求URL中的额外路径信息。额外路径信息是请求URL中的位于Servlet的路径之后和查询参数之前的内容，它以“/”开头
+- `getRemoteAddr`
+  - 方法返回发出请求的客户机的IP地址
+- `getRemoteHost`
+  - 方法返回发出请求的客户机的完整主机名
+- `getRemotePort`
+  - 方法返回客户机所使用的网络端口号
+- `getLocalAddr`
+  - 方法返回WEB服务器的IP地址
+- `getLocalName`
+  - 方法返回WEB服务器的主机名
+
+
+
+##### `request` 接收表单提交参数中文乱码
+
+`post` 方式提交参数乱码
+
+> 通过设置统一编码方式解决 `request.setCharacterEncoding("")`
+
+`get` 方式乱码
+
+> 以 `get` 方式传输的数据即使设置了指定的编码接收数据任会产生乱码
+>
+> 解决：接收数据，先获取 `request` 对象以 `ISO8859-1` 接收的原始字符数组，通过指定的编码构建字符串
+
+
+
+```java
+String name = request.getParameter("name");//接收数据
+name =new String(name.getBytes("ISO8859-1"), "UTF-8") ;//获取request对象以ISO8859-1字符编码接收到的原始数据的字节数组，然后通过字节数组以指定的编码构建字符串，解决乱码问题
+```
+
+超链接形式乱码
+
+处理方式和 `get` 方式相同，可以使用 `URLEncoder.encode` 对参数先进行处理
 
 
 
@@ -1041,3 +1091,122 @@ ImageIO.write(image, "jpg", response.getOutputStream());
 </filter-mapping>
 ```
 
+
+
+##### 生命周期
+
+- 初始化 `init()`
+- 提供服务 `doFilter()`
+- 销毁服务 `destroy()`
+
+
+
+##### 注解形式开发过滤器
+
+`@WebFilter(filterName="", urlPatterns="")`
+
+
+
+##### 字符过滤器
+
+主要用来解决乱码问题
+
+`GET` 请求通过 `server.xml` 添加 `URLEncoding="UTF-8"`
+
+`POST` 请求使用 `request.setCharacterEncoding("UTF-8")`
+
+响应部分 `response.setContentType("text/html;charset=UTF-8")`
+
+
+
+```java
+HttpServletRequest req = (HttpServletRequest)request;
+req.setCharacterEncoding("UTF-8");
+HttpServletResponse res = (HttpServletResponse)response;
+res.setContentType("text/html;charset=UTF-8");
+chain.doFilter(request,response);
+```
+
+
+
+##### 过滤链
+
+每一个过滤器都应该具有独立的职能
+
+过滤器执行的顺序由 `<filter-mapping>` 来决定
+
+调用 `chain.doFilter()` 将请求向后传递
+
+> 可以通过控制 `chain.doFilter()` 调用实现防火墙的功能
+
+
+
+##### 应用
+
+多端设备自动匹配
+
+
+
+### 监听器
+
+
+
+##### 三种监听器
+
+- `ServletContext`
+  - 对全局属性进行监听
+- `HttpSession`
+  - 用户会话及用户属性
+- `ServletRequest`
+  - 请求及属性操作
+
+
+
+##### 开发监听器三要素
+
+- 实现 `Listener` 接口，不同监听器监听不同的对象
+- 实现每个接口的独有方法
+- 配置 `<listener>` 
+
+
+
+##### 应用
+
+请求流量分析
+
+- 使用监听器实现 `ServletContextListener` `ServletRequestListener`
+- 根据 `request` 请求添加次数
+- 创建 `servlet`  处理流量
+- 使用 `fastJson` `jQuery` `echars` 实现图表可视化
+
+
+
+静态数据预处理
+
+- 实现 `ServletContextListener`
+- 初始化添加静态数据预加载
+
+
+
+### `Freemarker`
+
+- `Freemarker` 是免费开源的模板引擎
+- `Freemarker` 脚本为 `Freemarker Template Language`
+- `Freemarker` 提供大量内置函数简化开发
+
+
+
+##### `jsp` 和 `freemarker`
+
+- `jsp` 为官方的执行标准，`Freemarker` 不是
+- `jsp` 执行方式为编译型，`Freemarker` 为解释型
+- `jsp` 执行效率较高，开发效率低，扩展能力差
+- `jsp` 数据提取方式 `JSTL + EL`，`Freemarker` 内置标签
+
+
+
+##### 使用
+
+- 加载模板
+- 创建数据
+- 产生输出
