@@ -1210,3 +1210,99 @@ chain.doFilter(request,response);
 - 加载模板
 - 创建数据
 - 产生输出
+
+
+
+##### `FTL` 取值
+
+- `${属性名}`
+- `${属性名!默认值}`
+- `${属性名?string("yyyMMdd")}`
+  - 格式化输出
+
+
+
+##### 分支判断
+
+```ftl
+<#if 条件>
+	执行代码
+<#elseif 条件>
+	执行代码
+<#else>
+</#if>
+
+<#switch value>
+	<#case refValue>
+		...
+	<#break>
+</#switch>
+```
+
+
+
+##### `list` 迭代列表
+
+```
+<#list student as stu>
+	<li>${stu_index}</li>
+</#list>
+
+<# 迭代 Map>
+<#list map?kes as key>
+	${key}:${map[key]}
+</#list>
+```
+
+
+
+##### 内建函数
+
+![image-20220320090228569](imgs/image-20220320090228569.png)
+
+##### `Freemarker` 和 `Servlet` 整合
+
+- `Servlet` 中配置 `Freemarker`  信息
+
+
+
+### `MVC` 模式
+
+- 视图
+  - 展示最终结果
+  - 一般为 `jsp` 或者模板引擎
+- 控制器
+  - 常用 `Servlet`
+    - 接收数据
+    - 调用处理类
+    - 跳转到视图
+- 模型
+  - 负责产生业务数据，通常使用 `Service` 结尾
+
+
+
+##### 工程结构
+
+![image-20220320211011542](imgs/image-20220320211011542.png)
+
+
+
+##### 包的结构
+
+![image-20220320210937723](imgs/image-20220320210937723.png)
+
+
+
+> `Servlet` 只允许单向调用 `Dao`
+
+
+
+##### `JavaBean`
+
+不是一种技术，是一种 `java` 类的格式要求，通常用于存储数据
+
+
+
+- 类必须 `public` 并且提供默认的构造方法
+- 所有属性私有化
+- 属性的操作提供 `getter` 和 `setter`
