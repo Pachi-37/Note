@@ -217,3 +217,98 @@
   - 按属性名未注入，则按类型注入，和 `@Autowired` 一样需要加入 `@Primary` 解决冲突
 
 > 一般保证设置 `name` 或者 属性名和 `bean` 名称保持一致
+
+
+
+##### 元数据注解
+
+为容器管理对象时提供一些辅助信息
+
+![image-20220405131330025](imgs/image-20220405131330025.png)
+
+> `@value(${})` 主要用于注入配置文件中的数据
+>
+> ```xml
+> <!-- 加载配置文件 -->
+> <context:property-placeholder location="classpath:*.properties"/>
+> ```
+
+
+
+##### `Java Config`
+
+使用 `java` 代码来配置，使其摆脱了 `XML` 的束缚，可以对配置进行集中管理
+
+![image-20220405132617167](imgs/image-20220405132617167.png)
+
+> 使用这种方法编写可以在编译的时候发现错误，但是程序可维护性较低
+
+
+
+##### `Spring Test` 整合 `JUnite 4`
+
+- `Maven` 引入 `spring-test`
+- 利用 `@RunWith` 和 `@ContextConfiguration` 描述测试用例
+  - `@RunWith` 使得 `Spring` 接管 `Junite` 控制权
+- 测试用例从容器获取对象完成测试用例执行
+
+
+
+# `Spring AOP`
+
+`Spring` 中可插拔的组件技术
+
+
+
+##### 应用
+
+为当前程序添加时间模块
+
+- 引入模块
+
+  - `spring-context`
+  - `asceptjweaver`
+
+- 创建切面类
+
+  - 切面方法用于扩展额外功能
+
+  > 切面方法必须添加 `JoinPoint`，通过连接点获取目标方法/类信息 
+
+	```java
+	public void printExecuteTime(JoinPoint joinPoint){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String now = sdf.format(new Date());
+        String className = joinPoint.getTarget().getClass().getName();
+        String methodName = joinPoint.getSignature().getName();
+
+    }
+	```
+
+- 配置切面的作用范围
+
+  ```xml
+  <aop:config>
+      <!-- PointCut 切点，使用 execution 表达式描述切面的范围 -->
+      <aop:pointcut id="pointCut" expression="execution(public * aop..*.*(..))"/>
+      <aop:aspect ref="methodAspect">
+          <!-- 目标方法运行前，先执行切面方法 -->
+          <aop:before method="printExecuteTime" pointcut-ref="pointCut"/>
+     </aop:aspect>
+  </aop:config>
+  ```
+
+
+
+##### `Spring AOP` 和 `AspectJ`
+
+- `Eclipse AspectJ`，一种基于 `java` 平台的切面编程语言
+- `AOP` 使用 `AspectJWeaver` 实现类和方法匹配
+- `AOP` 利用代理模式实现对象运行时功能扩展
+
+
+
+##### 关键概念
+
+![image-20220407092717524](imgs/image-20220407092717524.png)
