@@ -312,3 +312,131 @@
 ##### 关键概念
 
 ![image-20220407092717524](imgs/image-20220407092717524.png)
+
+
+
+##### `PonitCut` 切点表达式
+
+- `*`
+  - 通配符
+- `..`
+  - 包通配符
+- `(..)`
+  - 参数通配符
+
+> 一个正常的类方法的访问：
+>
+> `public void com.company.Class.method(parameter)`
+>
+> `public *	com ..*     .*(..)`
+
+
+
+##### 五种通知类型
+
+![image-20220410101802429](imgs/image-20220410101802429.png) 
+
+> 特殊的通知：
+>
+> 引介增强，是一种对类的增强，允许在运行时对目标类增加新的属性或方法
+
+
+
+##### 应用
+
+利用环绕通知实现性能筛查
+
+> 环绕通知必须使用特殊的切入点 `ProceedingJoinPoint`，在原有的功能外，还可以控制目标方法是否执行 
+
+```java
+public Object check(ProceedingJoinPoint pjp) throws Throwable {
+
+        try {
+            long startTime = new Date().getTime();
+            Object ret = pjp.proceed();
+            long endTime = new Date().getTime();
+            long duration = endTime - startTime;
+
+            if (duration >= 1000) {
+                System.out.println("=====" + duration + "(ms):" + pjp.getTarget().getClass().getName() + "." + pjp.getSignature().getName());
+            }
+
+            return ret;
+        } catch (Throwable e) {
+            throw e;
+        }
+    }
+```
+
+
+
+##### 基于注解配置 `Spring AOP`
+
+```xml
+<!-- 启用 aop 的注解模式 -->
+<aop:aspectj-autoproxy/>
+```
+
+`@Aspect` 声明当前类为一个切片类
+
+`@Around("execution()")` 声明其为一个环绕通知，并定义环绕通知的范围
+
+
+
+# `AOP` 底层的实现原理
+
+`Spring` 基于代理模式实现功能的动态扩展
+
+- 目标类实现接口，通过 `JDK` 动态代理实现功能扩展
+- 目标类没有实现接口，通过 `CGLib` 组件实现功能扩展
+
+
+
+### 代理模式
+
+通过代理对象对源对象实现功能扩展
+
+> 类似于中介
+
+![image-20220410151703371](imgs/image-20220410151703371.png)
+
+- 代理类中持有委托类
+- 代理类和委托类实现相同的接口
+
+> 代理类 -- 中介	委托类 -- 房东	客户类 -- 房客	接口 -- 租房
+
+
+
+##### 静态代理
+
+需要手动创建代理类的代理模式
+
+
+
+##### 动态代理
+
+利用反射机制实现自动创建代理类
+
+实现 `InvocationHandler` 接口 
+
+- `proxy`
+  - 代理类对象，通常是 `JDK` 代理类自动生成的
+- `method`
+  - 目标方法
+- `args`
+  - 目标方法传入的参数
+
+
+
+### `CGLib`
+
+`Code Generation Library`
+
+将未继承接口的类 `$$EnhancerByCGLIB` 继承原始类
+
+```java
+// 前置处理代码
+super.method()
+// 后置处理代码
+```
+
