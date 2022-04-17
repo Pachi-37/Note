@@ -440,3 +440,138 @@ super.method()
 // 后置处理代码
 ```
 
+
+
+### `Spring JDBC`
+
+对 `JDBC` 模块进行封装，极大简化开发的工作量
+
+> 相比较 `MyBatis` 而言，`Spring JDBC`是对 `JDBC` 的简单封装，执行效率更加高
+
+
+
+##### 使用步骤
+
+- 引入依赖 `spring-jdbc`
+- 在 `applicationContext.xml` 配置 `DataSource` 数据源
+- 在 `Dao` 中注入 `JdbcTemplate` 对象
+
+```xml
+<!-- 设置数据源 -->
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+    <property name="url" value="jdbc:mysql://localhost:3306/..."/>
+    <property name="username"/>
+    <property name="password"/>
+</bean>
+
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+	<property name="dataSource" ref="dataSource"/>
+</bean>
+```
+
+
+
+##### 事务
+
+编程式事务
+
+通过代码手动提交回滚事务，`SpringJdbc` 通过 `TrasactionManager` 事务控制器来实现事务的控制（`commit` / `rollback`）
+
+```xml
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	<property name="dataSource" ref="dataSource"/>
+</bean>
+```
+
+```java
+// 定义事务的默认标准配置
+TransactionDefinition definition = new DefaultTransactionDefinition();
+// 开启事务,返回事务状态
+TransactionStatus status = transactionManager.getTransaction(definition);
+
+try {
+    transactionManager.commit(status);  
+} catch() {
+    transactionManager.rollback(status);
+}
+```
+
+
+
+##### 声明式事务
+
+在不修改源代码的情况下通过配置的形式自动实现事务的控制，其本质是 `AOP` 环绕通知
+
+- 目标方法运行成功时，自动提交事务
+- 目标方法抛出运行异常时，自动回滚事务
+
+
+
+步骤
+
+- 配置 `TransactionManager` 事务管理器
+- 配置事务通知和事务属性
+- 绑定 `PointCut` 切点
+
+```xml
+	<!-- 1.事务管理器，用于创建/提交/回滚   -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!-- 2.事务通知配置，决定哪些方法使用事务   -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- 3. 配置方法，使用事务传播行为 -->
+            <tx:method name="batchMethod" propagation="REQUIRED"/>
+            <!-- 4. 设置查询方法不支持事务机制 -->
+            <tx:method name="find" propagation="NOT_SUPPORTED" read-only="true"/>
+            <!-- 不支持条件的方法执行以下规则 -->
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+    <!-- 3.确认事务通知范围   -->
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* jdbc..*Service.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/>
+    </aop:config>
+```
+
+
+
+##### 事务传播行为 
+
+多个拥有事务的方法在嵌套调用时事务的控制方式
+
+
+
+使用方式
+
+- `xml`
+  - `<tx:method name="" propagation="">`
+- 注解
+  - `@Transactional(propagation=)`
+
+
+
+![image-20220417174942496](imgs/image-20220417174942496.png)
+
+
+
+##### 注解配置
+
+- 添加扫描基本包
+
+  - ```xml
+    <context:component-scan base-package="">
+    ```
+
+- 设置数据源和、`jdbcTemplate` 和 `transactionManager`
+
+- 启用注解形式声明事务
+
+  - ```xml
+    <tx:annotation-driven transacation-manager="transactionManager"/>
+    ```
+
+    
