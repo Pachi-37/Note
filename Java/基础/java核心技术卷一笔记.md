@@ -57,6 +57,18 @@
 >
 > `// c:\user`	`java: 非法的 Unicode 转义 —— \u后面未加十六进制数`
 
+码点和代码单元
+
+大多数常用的 `Unicode` 字符使用一个代码单元就可以表示，而辅助字符则需要一对代码单元表示
+
+> `length()` 方法返回采用 `UTF-16` 编码表示的给定字符串需要的代码单元数量
+>
+> 想要得到实际的长度，即码点数量，可以调用 `codePointCount`
+
+
+
+`Java` 中的 `char` 类型使用的是 `UTF-16` 编码，占用两个字节；对于辅助字符来说 `char` 的长度不够
+
 
 
 `Unicode`
@@ -66,6 +78,37 @@
 根据码点将 `UTF-16` 分为 17 个代码级别，第一个级别基本多语言基本（包含经典的代码）；其余的里面也包含一些辅助字符
 
 > 通常情况下不使用 `char` ，除非需要处理 `UTF-16` 代码单元
+
+
+
+```java
+// 获取位置为 n 的代码单元
+charAt(n); 
+
+// 获取位置为 i 的码点
+int index = greeting.offsetByCodePoints(0, i);
+int cp = greeting.codePointAt(index);
+
+// 遍历字符串，并查看每一个码点
+int cp = sentence.codePointAt(i);
+if (Character.isSupplementaryCodePoint(cp)) i+= 2;
+else i++;
+
+// 上一个码点
+i--;
+if (CharacterssSurrogate(sentence.charAt(i))) i--;
+int cp = sentence.codePointAt(i);
+```
+
+> 这样的用法很麻烦，可以使用 `codePoints`，将其转换为 `int` 值的流，每一个 `int` 对应一个码点
+>
+> 要将一个码点转换为一个字符串，可以使用 `String` 的构造函数
+
+
+
+##### 总结：
+
+编译器将 `Java` 源文件编译成 `.class` 文件时候需要用到文件的编码，我们一般设置为 `UTF-8`，如果文件是其他编码可能会出错；一旦完成转变之后就变为与平台无关的 `.class` 文件（`Unicode`）
 
 
 
