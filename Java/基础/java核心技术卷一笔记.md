@@ -164,3 +164,60 @@ int cp = sentence.codePointAt(i);
 > `==` 无法检测两个字符串是否相等，只能确定两个字符串是否存放在同一个位置上
 >
 > 只有字符串常量进行共享，`+` `substring` 等产生的结果并不会共享，所以无法使用 `==` 来判断字符串是否相等
+
+
+
+`StringBuilder` 
+
+构建字符串，有时候需要使用较短的字符串构建字符串，采用字符串连接的方式达到此目的效率比较低
+
+- 增添一部分字符串调用 `append()`
+- 需要构建字符串时候使用 `toString()`
+
+> `StringBuilder` 和 `StringBuffer` 两个 `API` 是相同的
+>
+> `StringBuffer` 允许用于多线程，它的效率要低一点
+
+
+
+### 输入输出流
+
+
+
+读取输入
+
+- 构造一个 `Scanner` 对象
+- 将标准输入流 `System.in` 与之关联
+
+> 输入是可见的，因此不适用于从控制台读取密码；
+>
+> `Console` 可以读取密码
+
+```java
+// 在控制台读取密码
+Console cons = System.console();
+String username = cons.readLine("User name: ")；
+cha[] passwd = cons.readPassword("Password:");
+```
+
+> 使用不是很方便，每次只能读取一行输入；没有单独读取一个单词或者数值的方法
+
+
+
+格式化输出
+
+使用 `s` 转换符格式化任意的对象。对于任意实现 `Formattable` 接口的对象都将实现 `formatTo` 方法；否则调用 `toString`
+
+
+
+文件读写
+
+- 使用 `File` 对象构造出一个 `Scanner` 对象
+
+`Scanner in = new Scanner(Paths.get("niyflle.txt"), "UTF-8");`
+
+> 如果省略编码会使用机器上的默认编码
+
+- `PrintWriter` 文件写入
+
+> 如果文件不存在，创建该文件；可以使用 `System.out` 下的常规命令
